@@ -1,3 +1,3 @@
-# Projeto_Imagem
+# Proje to_Imagem
 
-A descrição do projeto ainda está restrita.
+Este projeto tem o objetivo de desenvolver um sistema para pesagem e controle de alimentos em resturantes self service.

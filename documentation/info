@@ -4,3 +4,4 @@ http://192.168.4.1 stream de vídeo com configuração
 http://192.168.4.1/capture captura uma imagem fixa
 http://192.168.4.1/status mostra as configurações atuais
 http://192.168.4.1:81/stream apenas o vídeo
+http://192.168.43.206/peso apenas o peso
