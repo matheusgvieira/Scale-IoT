@@ -6,6 +6,7 @@
 //            or another board which has PSRAM enabled
 //
 
+
 // Select camera model
 //#define CAMERA_MODEL_WROVER_KIT
 //#define CAMERA_MODEL_ESP_EYE
