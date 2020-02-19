@@ -1,3 +1,4 @@
+
 /*
  *  Autor: Matheus Gois Vieira
  *  Empresa: ContaHub
@@ -10,6 +11,10 @@
 #include <HX711.h>
 #include <PushButton.h>
 #include <SoftwareSerial.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+
 
 // DEFINIÇÕES DE PINOS
 #define pinDT  2
@@ -26,6 +31,7 @@
 HX711 scale;
 PushButton botao(pinBotao);
 SoftwareSerial mySerial(10,11);
+LiquidCrystal_I2C lcd(0x27,16,2);
 
 // DECLARAÇÃO DE VARIÁVEIS  
 float medida=0;
@@ -34,13 +40,19 @@ char str[80];
 void setup() {
   Serial.begin(57600);
   mySerial.begin(115200);
+  lcd.begin(16,2);
+  lcd.init();
 
   scale.begin(pinDT, pinSCK); // CONFIGURANDO OS PINOS DA BALANÇA
-  scale.set_scale(-5221735); // ENVIANDO O VALOR DA ESCALA CALIBRADO
+  scale.set_scale(100815); // ENVIANDO O VALOR DA ESCALA CALIBRADO
 
   delay(2000);
   scale.tare(); // ZERANDO A BALANÇA PARA DESCONSIDERAR A MASSA DA ESTRUTURA
   Serial.println("Setup Finalizado!");
+
+  lcd.setBacklight(HIGH);
+  lcd.setCursor(0,0);
+  lcd.print("ContaHUB");
 }
 
 void loop() {
@@ -67,6 +79,8 @@ void loop() {
       Serial.println("-------------------------");
       Serial.println(str);
       Serial.println("-------------------------");
+      lcd.setCursor(0,1);
+      lcd.print(str);
       mySerial.write(str);
       Serial.println("Valor enviado");
     }
