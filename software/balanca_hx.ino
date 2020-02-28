@@ -2,9 +2,11 @@
 /*
     Autor: Matheus Gois Vieira
     Empresa: ContaHub
-    Sketch:  Módulo para Arduino HX711
-    Data: 20/02/2020
+    Sketch:  Protótipo de Balança
+    Data: 26/02/2020
 */
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUSÃO DE BIBLIOTECAS
 #include <HX711.h>
@@ -12,78 +14,94 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
+/////////////////////////////////////////////////////////////////////////////////////
+
 // DEFINIÇÕES DE PINOS
-#define pinDT  2
-#define pinSCK  3
+#define pinDT  4
+#define pinSCK  5
+#define b1Pin 2
+#define b2Pin 3
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 // INSTANCIANDO OBJETOS
 HX711 scale;
 SoftwareSerial mySerial(10, 11);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
+
+/////////////////////////////////////////////////////////////////////////////////////
+
 // DECLARAÇÃO DE VARIÁVEIS
-float medida = 0;
+float medida = 0, aux = 0;
 char str[80];
-int aux = 0;
+int c = 0, a = 1;
+boolean tb2;
+volatile byte state = LOW;
+const byte ledPin = 13;
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 void setup() {
-  Serial.begin(57600);
-  mySerial.begin(115200);
-  lcd.begin(16, 2);
-  lcd.init();
 
+  // Configurando a velocidade da cominicação serial
+  Serial.begin(57600);  // Configurando velocidade do monitor serial
+  mySerial.begin(115200);   // Configurando velocidade do envio via serial
 
+  // Configurando o Display 16x02
+  lcd.begin(16, 2); // Tamanho do display
+  lcd.init();   // Inicializando o display 16x02
+
+  // Habilitando pinos do microcontrolador
+  pinMode(ledPin, OUTPUT);
+  pinMode(b1Pin, INPUT_PULLUP);
+  pinMode(b2Pin, INPUT_PULLUP);
+
+  // Habilitando e configurando a interrupção no pino 2
+  attachInterrupt(digitalPinToInterrupt(b1Pin), changeDisplay1, LOW);
+  attachInterrupt(digitalPinToInterrupt(b2Pin), changeDisplay2, LOW);
+
+  // Configurando hx711
   scale.begin(pinDT, pinSCK); // CONFIGURANDO OS PINOS DA BALANÇA
-  scale.set_scale(20702); // LIMPANDO O VALOR DA ESCALA
-
+  scale.set_scale(c); // LIMPANDO O VALOR DA ESCALA
   delay(2000);
   scale.tare(); // ZERANDO A BALANÇA PARA DESCONSIDERAR A MASSA DA ESTRUTURA
   Serial.println("Iniciando Balança");
 
-  lcd.setBacklight(HIGH);
-  lcd.setCursor(0, 0);
-  lcd.print("ContaHUB");
+  // Iniciando Display
+  lcd.setBacklight(HIGH);   // Ligando backlight
+  lcd.setCursor(0, 0);      // Configurando onde será inserido dados no display
+  lcd.print("ContaHUB");    // Inicializando nome da empresa
 }
-
 void loop() {
-
-  medida = scale.get_units(5); // SALVANDO NA VARIAVEL O VALOR DA MÉDIA DE 5 MEDIDAS
-  Serial.println(medida, 3); // ENVIANDO PARA MONITOR SERIAL A MEDIDA COM 3 CASAS DECIMAIS
-
-  
-
-  if (medida < 0.06) {
-    medida = 0;
-    aux == 0;
-
-    // Send to serial and hardware
-    Serial.println(medida, 3);      // Print monitor serial
-    dtostrf(medida, 3, 3, str);     // Int to String
-    lcd.setCursor(0, 1);            // Position in the display
-    lcd.print(str);                 // Print in the display
-    mySerial.write(str);            // Enviando valor via serial TX/RX
-
-    while ((medida == 0) && (aux == 0)) {
-      medida = scale.get_units(10); // SALVANDO NA VARIAVEL O VALOR DA MÉDIA DE 10 MEDIDAS
-      aux = (medida < 0.06) ? 0 : 1;
-    }
+  if (a == 0) {
+    calibration();
   }
-
-  else {
-
-    // Send to serial and hardware
-    Serial.println(medida, 3);      // Print monitor serial
-    dtostrf(medida, 3, 3, str);     // Int to String
-    lcd.setCursor(0, 1);            // Position in the display
-    lcd.print(str);                 // Print in the display
-    mySerial.write(str);            // Sendo value to TX/RX
-    aux = medida;
-
-    while ( (medida == aux) || (((aux - 0.06) < medida) && (medida < (aux + 0.06))) ) {
-      aux = scale.get_units(10); // SALVANDO NA VARIAVEL O VALOR DA MÉDIA DE 10 MEDIDAS
-    }
+  if (a == 1) {
+    measurement();
   }
-  scale.power_down(); // DESLIGANDO O SENSOR
-  delay(1000); // AGUARDA 5 SEGUNDOS
-  scale.power_up(); // LIGANDO O SENSOR
 }
+void changeDisplay1() {
+  static bool estado = LOW;
+  static unsigned long delayEstado;
+
+
+  if ( (millis() - delayEstado) > 100 ) {
+    state = !state;
+    delayEstado = millis();
+  }
+  a = 0;
+}
+void changeDisplay2() {
+  static bool estado = LOW;
+  static unsigned long delayEstado;
+
+
+  if ( (millis() - delayEstado) > 100 ) {
+    state = !state;
+    delayEstado = millis();
+  }
+  a = 1;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
