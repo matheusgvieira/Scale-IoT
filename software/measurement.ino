@@ -1,5 +1,10 @@
 void measurement() {
 
+  // Iniciando Display
+  lcd.setBacklight(HIGH);   // Ligando backlight
+  lcd.setCursor(0, 0);      // Configurando onde será inserido dados no display
+  lcd.print("ContaHUB");    // Inicializando nome da empresa
+
   medida = 0;
   delay(500);
   medida = scale.get_units(5); // SALVANDO NA VARIAVEL O VALOR DA MÉDIA DE 5 MEDIDAS

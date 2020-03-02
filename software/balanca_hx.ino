@@ -35,9 +35,10 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 // DECLARAÇÃO DE VARIÁVEIS
 float medida = 0, aux = 0;
 char str[80];
-int c = 0, a = 1;
+int c = 17248, d = 0;
 boolean tb2;
 volatile byte state = LOW;
+volatile byte a = LOW;
 const byte ledPin = 13;
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -56,52 +57,53 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(b1Pin, INPUT_PULLUP);
   pinMode(b2Pin, INPUT_PULLUP);
+  tb2 = 0x00;
 
-  // Habilitando e configurando a interrupção no pino 2
+  // Habilitando e configurando a interrupção no pino 2 e 3
   attachInterrupt(digitalPinToInterrupt(b1Pin), changeDisplay1, LOW);
-  attachInterrupt(digitalPinToInterrupt(b2Pin), changeDisplay2, LOW);
-
-  // Configurando hx711
-  scale.begin(pinDT, pinSCK); // CONFIGURANDO OS PINOS DA BALANÇA
-  scale.set_scale(c); // LIMPANDO O VALOR DA ESCALA
-  delay(2000);
-  scale.tare(); // ZERANDO A BALANÇA PARA DESCONSIDERAR A MASSA DA ESTRUTURA
   Serial.println("Iniciando Balança");
 
-  // Iniciando Display
-  lcd.setBacklight(HIGH);   // Ligando backlight
-  lcd.setCursor(0, 0);      // Configurando onde será inserido dados no display
-  lcd.print("ContaHUB");    // Inicializando nome da empresa
+  setup_scale();
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
 void loop() {
-  if (a == 0) {
+  if (a == HIGH) {
     calibration();
   }
-  if (a == 1) {
+  if (a == LOW) {
     measurement();
   }
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
 void changeDisplay1() {
   static bool estado = LOW;
   static unsigned long delayEstado;
 
 
   if ( (millis() - delayEstado) > 100 ) {
-    state = !state;
     delayEstado = millis();
   }
-  a = 0;
+  a = !a;
 }
-void changeDisplay2() {
-  static bool estado = LOW;
-  static unsigned long delayEstado;
+/////////////////////////////////////////////////////////////////////////////////////
 
-
-  if ( (millis() - delayEstado) > 100 ) {
-    state = !state;
-    delayEstado = millis();
+void setup_scale() {
+  // Configurando hx711
+  scale.begin(pinDT, pinSCK); // CONFIGURANDO OS PINOS DA BALANÇA
+  scale.set_scale(c); // LIMPANDO O VALOR DA ESCALA
+  delay(2000);
+  scale.tare(); // ZERANDO A BALANÇA PARA DESCONSIDERAR A MASSA DA ESTRUTURA
+  Serial.println("Calibragem Realizada");
+}
+/////////////////////////////////////////////////////////////////////////////////////
+void debug() {
+  while (1) {
+    digitalWrite(ledPin, HIGH);
+    delay(500);
+    digitalWrite(ledPin, LOW);
+    delay(500);
   }
-  a = 1;
 }
-
 /////////////////////////////////////////////////////////////////////////////////////
