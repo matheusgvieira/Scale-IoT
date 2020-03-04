@@ -1,5 +1,5 @@
 #define led 13
-char vector[] = {0,0,0,0};
+char vector[] = {0,0,0,0,0};
 char value;
 
 void setup() {
@@ -18,14 +18,10 @@ void loop() {
     // lê o dado recebido:
     for(int c = 0; c < 5; c++){
       value = Serial.read();
-      if(value == null){
-        c = 0;
-      }
-      else{
-        vector[c] = value;
-      }      
+      vector[c] = value;
     }
     Serial.println("Valor:");
+    int result = atoi(vector);
     Serial.print(vector);
     Serial.println("kg");
     Serial.println("--------------------");
