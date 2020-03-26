@@ -1,0 +1,27 @@
+<!DOCTYPE HTML><html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <div id="container">
+    <h2>ContaHUB Scale</h2>
+    <p>Obtenha a foto e peso do prato</p>
+    <p>
+      <button onclick="rotatePhoto();">ROTATE</button>
+      <button onclick="capturePhoto()">CAPTURE PHOTO</button>
+      <button onclick="location.reload();">REFRESH PAGE</button>
+      <button onclick="scale();">PESO</button>
+    </p>
+
+    <div id="photo">
+      <img src="saved-photo" id="photo" width="70%">
+    </div>
+    <div class="rectangle">
+      <iframe id="myFrame" src="http://192.168.1.209/peso" frameborder="0"></iframe>
+    </div>
+  </div>
+  
+</body>
+<script type="text/javascript" src="action.js">  </script>
+</html>

@@ -1,0 +1,72 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto:300);
+
+body { 
+    text-align:center; 
+    background: #000000; /* fallback for old browsers */
+    background: -webkit-linear-gradient(right, #000000, rgb(0, 0, 0));
+    background: -moz-linear-gradient(right, #000000, rgb(0, 0, 0));
+    background: -o-linear-gradient(right, #000000, rgb(0, 0, 0));
+    background: linear-gradient(to left, #000000, rgb(0, 0, 0));
+    font-family: "Roboto", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.vert { 
+    margin-bottom: 10%;
+}
+.hori{
+    margin-bottom: 0%; 
+}
+.rectangle {    
+    text-align:center; 
+    position: relative;
+    top: 10px;
+    left: 400px;
+    height: 50px;
+    width: 100px;
+    background: rgb(248, 243, 243);
+    color: #FFFFFF;
+    border-radius: 20px;
+    font-weight: bold; 
+}
+
+div#container{
+    position: relative;
+    z-index: 1;
+    background: #FFFFFF;
+    max-width: 900px;
+    margin: 0 auto 100px;
+    padding: 45px;
+    text-align: center;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  
+}
+div#photo{
+}
+h2{
+    margin: 0 0 15px;
+    padding: 0;
+    font-size: 36px;
+    font-weight: 300;
+    color: #1a1a1a;
+}
+div#container button {
+    font-family: "Roboto", sans-serif;
+    text-transform: uppercase;
+    outline: 0;
+    background: rgb(121, 124, 119);
+    width: 20%;
+    border: 0;
+    padding: 10px;
+    color: #FFFFFF;
+    font-size: 14px;
+    -webkit-transition: all 0.3 ease;
+    transition: all 0.3 ease;
+    cursor: pointer;
+    margin: 10px;
+    border-radius: 20px;
+    font-weight: bold; 
+  }
+  iframe#myFrame{
+    display: none;
+  }
