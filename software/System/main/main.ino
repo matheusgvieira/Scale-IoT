@@ -12,9 +12,11 @@
 #include <FS.h>
 #include <ScaleElgin.h>
 #include <MemoryFlash.h>
-#include <ESPAsyncWiFiManager.h>  
+#include <ESPAsyncWiFiManager.h>
 #include <AsyncTCP.h>
-#include <WebSerial.h>       
+#include <WebSerial.h>
+#include <ESPmDNS.h>
+#include <WiFiClient.h>
 
 // Defining Variables
 char content;
@@ -25,10 +27,12 @@ String peso;
 // Create object e initialize function
 MemoryFlash flash(1);
 ScaleElgin scale(peso);
-AsyncWebServer server(80);
+WiFiServer server(80);
 DNSServer dns;
 void recvMsg(uint8_t *data, size_t len);
-
+String czero(String json);
+void beginIP();
+AsyncWebServer serverAsync(81);
 
 // Photo File Name to save in SPIFFS
 #define FILE_PHOTO "/photo.jpg"
@@ -54,16 +58,20 @@ void recvMsg(uint8_t *data, size_t len);
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(9600);
-  
+
+  // Turn-off the 'brownout detector'
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+
   // Serial port for debugging purposes
   Serial.println();
   Serial.println("Inicializando a Sistema");
 
   // Seach wifi e config
-  AsyncWiFiManager wifiManager(&server,&dns);
-  wifiManager.autoConnect("Esp_Contahub");
+  AsyncWiFiManager wifiManager(&serverAsync, &dns);
+  wifiManager.autoConnect("Esp_ContaHUB", "contahub");
   Serial.println("Conectado!");
-  
+  beginIP();
+
   // Config SPIFFS
   if (!SPIFFS.begin(true)) {
     Serial.println("An Error has occurred while mounting SPIFFS");
@@ -79,7 +87,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // WebSerial is accessible at "<IP Address>/log" in browser
-  WebSerial.begin(&server);
+  WebSerial.begin(&serverAsync);
   WebSerial.msgCallback(recvMsg);
   server.begin();
   Serial.println("WebSerial Inicializado");
@@ -87,13 +95,11 @@ void setup() {
 
   // Serial port tests
   Serial.println();
-  Serial.println("Inicializando a Balança..");
-  WebSerial.println("Inicializando a Balança..");
-  WebSerial.println("IP: 192.168.1.129");
-  
+  Serial.println("Inicializando a Balança...");
+  WebSerial.println("Inicializando a Balança...");
 
-  // Turn-off the 'brownout detector'
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+
+  
 
   // OV2640 camera module
   camera_config_t config;
@@ -136,36 +142,58 @@ void setup() {
 
   // Route for root / web page
   // Route for root / web page
-  server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest *request){
+  serverAsync.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/dashboard.html", "text/html");
   });
-  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+  serverAsync.on("/style.css", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/style.css", "text/css");
   });
-  server.on("/action.js", HTTP_GET, [](AsyncWebServerRequest *request){
+  serverAsync.on("/action.js", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/action.js", "text/js");
   });
 
-  server.on("/capture", HTTP_GET, [](AsyncWebServerRequest * request) {
+  serverAsync.on("/capture", HTTP_GET, [](AsyncWebServerRequest * request) {
     takeNewPhoto = true;
     request->send_P(200, "text/plain", "Taking Photo");
   });
 
-  server.on("/peso", HTTP_GET, [](AsyncWebServerRequest * request) {
+  serverAsync.on("/peso", HTTP_GET, [](AsyncWebServerRequest * request) {
     String weight = scale.readScale();
-    flash.writeString(10,weight);
+    weight = czero(weight);
+    AsyncWebServerResponse *response = request->beginResponse(200, "text/html", weight);
+    response->addHeader("Access-Control-Allow-Origin", "*");
+    //response->addHeader("Access-Control-Allow-Origin", "http://sp.contahub.com");
+    response->addHeader("Access-Control-Allow-Credentials", "true");
+    response->addHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
+    response->addHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Pragma, Cache-Control, Access-Control-Request-Method, Access-Control-Request-Headers");
+
+    request->send(response);
+  });
+
+  serverAsync.on("/peso", HTTP_GET, [](AsyncWebServerRequest * request) {
+
+    String weight = scale.readScale();
+    weight = czero(weight);
+    flash.writeString(10, weight);
+
     WebSerial.println("Peso Capturado!");
     WebSerial.println("Peso:");
     WebSerial.println(weight);
+
     request->send(200, "text/html", weight);
   });
 
-  server.on("/saved-photo", HTTP_GET, [](AsyncWebServerRequest * request) {
+  serverAsync.on("/saved-photo", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, FILE_PHOTO, "image/jpg", false);
   });
 
   // Start server
-  server.begin();
+  serverAsync.begin();
+
+  Serial.print("ESP Board MAC Address:  ");
+  Serial.println(WiFi.macAddress());
+  WebSerial.print("ESP Board MAC Address:  ");
+  WebSerial.println(WiFi.macAddress());
 
 }
 

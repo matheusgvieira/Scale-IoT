@@ -11,6 +11,7 @@ function capturePhoto() {
 function scale() {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', "/peso", true);
+  xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
   xhr.send();
   blockFrame();
 }
@@ -23,23 +24,3 @@ function rotatePhoto() {
 }
 function isOdd(n) { return Math.abs(n % 2) == 1; }
 
-
-/*function getWeight() {
-  var iframe = document.getElementById("myFrame");
-  var weight = iframe.contentWindow.document.getElementsByTagName("p");
-  
-  document.getElementById("div.rectangle").appendChild(weight);
-}
-function getWeight(){
-  var iFrame =  document.getElementById('myFrame');
-  var iFrameBody;
-  if ( iFrame.contentDocument ) 
-  { // FF
-    iFrameBody = iFrame.contentDocument.getElementsByTagName('body')[0];
-  }
-  else if ( iFrame.contentWindow ) 
-  { // IE
-    iFrameBody = iFrame.contentWindow.document.getElementsByTagName('body')[0];
-  }
-   console.log(iFrameBody.innerHTML);
-}*/

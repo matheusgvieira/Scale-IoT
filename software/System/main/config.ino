@@ -53,3 +53,38 @@ void recvMsg(uint8_t *data, size_t len) {
   }
   WebSerial.println(d);
 }
+
+String czero(String json){
+    int len = json.length()+ 1;
+    char aux[len];
+    json.toCharArray(aux,len);
+
+    if(aux[11] == '0' and aux[10] == ' '){
+      for(int i = 11; i<16; i++){
+        aux[i] = aux[i+1];
+      }
+    }
+    return aux;  
+}
+
+void beginIP() {
+  // Set up mDNS responder:
+  // - first argument is the domain name, in this example
+  //   the fully-qualified domain name is "esp8266.local"
+  // - second argument is the IP address to advertise
+  //   we send our IP address on the WiFi network
+  if (!MDNS.begin("scale-contahub")) {
+    Serial.println("Error setting up MDNS responder!");
+    while (1) {
+      delay(1000);
+    }
+  }
+  Serial.println("mDNS responder started");
+
+  // Start TCP (HTTP) server
+  server.begin();
+  Serial.println("TCP server started");
+
+  // Add service to MDNS-SD
+  MDNS.addService("http", "tcp", 80);
+}
