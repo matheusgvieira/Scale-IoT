@@ -54,37 +54,66 @@ void recvMsg(uint8_t *data, size_t len) {
   WebSerial.println(d);
 }
 
-String czero(String json){
-    int len = json.length()+ 1;
-    char aux[len];
-    json.toCharArray(aux,len);
+String czero(String json) {
+  int len = json.length() + 1;
+  char aux[len];
+  json.toCharArray(aux, len);
 
-    if(aux[11] == '0' and aux[10] == ' '){
-      for(int i = 11; i<16; i++){
-        aux[i] = aux[i+1];
-      }
-    }
-    return aux;  
-}
-
-void beginIP() {
-  // Set up mDNS responder:
-  // - first argument is the domain name, in this example
-  //   the fully-qualified domain name is "esp8266.local"
-  // - second argument is the IP address to advertise
-  //   we send our IP address on the WiFi network
-  if (!MDNS.begin("scale-contahub")) {
-    Serial.println("Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
+  if (aux[11] == '0' and aux[10] == ' ') {
+    for (int i = 11; i < 16; i++) {
+      aux[i] = aux[i + 1];
     }
   }
-  Serial.println("mDNS responder started");
+  return aux;
+}
 
-  // Start TCP (HTTP) server
-  server.begin();
-  Serial.println("TCP server started");
+String ipToString(IPAddress ip) {
+  String s = "";
+  for (int i = 0; i < 4; i++)
+    s += i  ? "." + String(ip[i]) : String(ip[i]);
+  return s;
+}
 
-  // Add service to MDNS-SD
-  MDNS.addService("http", "tcp", 80);
+void ConnectIpFixed() {
+  IPAddress numGat;
+  IPAddress numSub;
+  int numIp[2];
+
+  // Wait for connection
+  AsyncWiFiManager wifiManager(&server, &dns);
+  wifiManager.autoConnect("EspContaHUB", "contahub");
+  Serial.println("Connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  numGat = WiFi.gatewayIP();
+  numSub = WiFi.subnetMask();
+  String stringIp = ipToString(WiFi.localIP());
+
+  Serial.println("Disconnecting...");
+  WiFi.disconnect();                           // This doesnt
+  while (WiFi.status() == WL_CONNECTED) {
+    delay(500);
+  }
+  Serial.println(WiFi.status() != WL_CONNECTED ? "DISCONNECTED" : "FAILED");
+
+  numIp[0] = stringIp.toInt();
+
+  stringIp.remove(0, 4);
+  numIp[1] = stringIp.toInt();
+
+  stringIp.remove(0, 4);
+  numIp[2] = stringIp.toInt();
+
+
+  IPAddress local_IP(numIp[0], numIp[1], numIp[2], 222);
+
+  if (!WiFi.config(local_IP, numGat, numSub))Serial.println("STA Failed to configure");
+
+
+  wifiManager.autoConnect("EspContaHUB", "contahub");
+  Serial.print("Connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
 }

@@ -27,12 +27,13 @@ String peso;
 // Create object e initialize function
 MemoryFlash flash(1);
 ScaleElgin scale(peso);
-WiFiServer server(80);
 DNSServer dns;
+String ipToString(IPAddress ip);
 void recvMsg(uint8_t *data, size_t len);
 String czero(String json);
-void beginIP();
-AsyncWebServer serverAsync(81);
+AsyncWebServer server(80);
+void ConnectIpFixed();
+
 
 // Photo File Name to save in SPIFFS
 #define FILE_PHOTO "/photo.jpg"
@@ -67,10 +68,7 @@ void setup() {
   Serial.println("Inicializando a Sistema");
 
   // Seach wifi e config
-  AsyncWiFiManager wifiManager(&serverAsync, &dns);
-  wifiManager.autoConnect("Esp_ContaHUB", "contahub");
-  Serial.println("Conectado!");
-  beginIP();
+  ConnectIpFixed();
 
   // Config SPIFFS
   if (!SPIFFS.begin(true)) {
@@ -87,7 +85,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // WebSerial is accessible at "<IP Address>/log" in browser
-  WebSerial.begin(&serverAsync);
+  WebSerial.begin(&server);
   WebSerial.msgCallback(recvMsg);
   server.begin();
   Serial.println("WebSerial Inicializado");
@@ -97,9 +95,6 @@ void setup() {
   Serial.println();
   Serial.println("Inicializando a Balança...");
   WebSerial.println("Inicializando a Balança...");
-
-
-  
 
   // OV2640 camera module
   camera_config_t config;
@@ -142,27 +137,26 @@ void setup() {
 
   // Route for root / web page
   // Route for root / web page
-  serverAsync.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/dashboard.html", "text/html");
   });
-  serverAsync.on("/style.css", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/style.css", "text/css");
   });
-  serverAsync.on("/action.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/action.js", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/action.js", "text/js");
   });
 
-  serverAsync.on("/capture", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/capture", HTTP_GET, [](AsyncWebServerRequest * request) {
     takeNewPhoto = true;
     request->send_P(200, "text/plain", "Taking Photo");
   });
 
-  serverAsync.on("/peso", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/peso", HTTP_GET, [](AsyncWebServerRequest * request) {
     String weight = scale.readScale();
     weight = czero(weight);
     AsyncWebServerResponse *response = request->beginResponse(200, "text/html", weight);
-    response->addHeader("Access-Control-Allow-Origin", "*");
-    //response->addHeader("Access-Control-Allow-Origin", "http://sp.contahub.com");
+    response->addHeader("Access-Control-Allow-Origin", "http://sp.contahub.com");
     response->addHeader("Access-Control-Allow-Credentials", "true");
     response->addHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
     response->addHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Pragma, Cache-Control, Access-Control-Request-Method, Access-Control-Request-Headers");
@@ -170,7 +164,7 @@ void setup() {
     request->send(response);
   });
 
-  serverAsync.on("/peso", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/peso", HTTP_GET, [](AsyncWebServerRequest * request) {
 
     String weight = scale.readScale();
     weight = czero(weight);
@@ -183,12 +177,12 @@ void setup() {
     request->send(200, "text/html", weight);
   });
 
-  serverAsync.on("/saved-photo", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/saved-photo", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, FILE_PHOTO, "image/jpg", false);
   });
 
   // Start server
-  serverAsync.begin();
+  server.begin();
 
   Serial.print("ESP Board MAC Address:  ");
   Serial.println(WiFi.macAddress());
