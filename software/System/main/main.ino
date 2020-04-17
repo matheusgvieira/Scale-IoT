@@ -17,6 +17,7 @@
 #include <WebSerial.h>
 #include <ESPmDNS.h>
 #include <WiFiClient.h>
+#include <RegisterEsp.h>
 
 // Defining Variables
 char content;
@@ -33,6 +34,7 @@ void recvMsg(uint8_t *data, size_t len);
 String czero(String json);
 AsyncWebServer server(80);
 void ConnectIpFixed();
+RegisterEsp reg("http://contahub.com/iot.json");
 
 
 // Photo File Name to save in SPIFFS
@@ -69,6 +71,7 @@ void setup() {
 
   // Seach wifi e config
   ConnectIpFixed();
+  reg.begin();
 
   // Config SPIFFS
   if (!SPIFFS.begin(true)) {

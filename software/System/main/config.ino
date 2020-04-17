@@ -107,8 +107,9 @@ void ConnectIpFixed() {
 
 
   IPAddress local_IP(numIp[0], numIp[1], numIp[2], 222);
+  IPAddress dns(8, 8, 8, 8);
 
-  if (!WiFi.config(local_IP, numGat, numSub))Serial.println("STA Failed to configure");
+  if (!WiFi.config(local_IP, numGat, numSub, dns))Serial.println("STA Failed to configure");
 
 
   wifiManager.autoConnect("EspContaHUB", "contahub");
