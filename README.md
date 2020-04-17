@@ -1,3 +1,3 @@
-# Proje to_Imagem
+# BalançaIoT
 
-Este projeto tem o objetivo de desenvolver um sistema para pesagem e controle de alimentos em resturantes self service.
+O projeto tem o objetivo de desenvolver um sistema para pesagem e controle de alimentos em resturantes self service.
