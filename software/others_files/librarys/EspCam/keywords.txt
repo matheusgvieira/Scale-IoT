@@ -1,0 +1,8 @@
+# Arduino IDE Keywords for Syntax Coloring
+ 
+# Keyword for class ScaleElginDP3005
+EspCam              KEYWORD1
+ 
+# Keyword for class functions
+ConfigEspCam               KEYWORD2
+GetHttpPhoto               KEYWORD2  

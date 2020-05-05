@@ -1,0 +1,8 @@
+# Arduino IDE Keywords for Syntax Coloring
+ 
+# Keyword for class ScaleElginDP3005
+MemoryFlash              KEYWORD1
+ 
+# Keyword for class functions
+writeString               KEYWORD2
+read_String               KEYWORD2  

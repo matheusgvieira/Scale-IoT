@@ -1,0 +1,5 @@
+{
+    "board": "esp32:esp32:esp32cam",
+    "sketch": "examples\\GetImage.ino",
+    "port": "COM6"
+}
